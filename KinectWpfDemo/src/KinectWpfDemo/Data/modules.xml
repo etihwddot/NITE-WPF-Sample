@@ -1,0 +1,9 @@
+<Modules>
+    <Module path="nimRecorder.dll" />
+    <Module path="nimMockNodes.dll" />
+    <Module path="nimCodecs.dll" />
+    <Module path="XnVFeatures.dll" configDir="Data" />
+    <Module path="XnVHandGenerator.dll" configDir="Data" />
+    <Module path="XnDeviceFile.dll" />
+    <Module path="XnDeviceSensorV2.dll" configDir="Data" />
+</Modules>
