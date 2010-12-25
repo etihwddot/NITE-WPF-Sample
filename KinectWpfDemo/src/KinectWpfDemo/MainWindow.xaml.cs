@@ -48,14 +48,40 @@ namespace KinectWpfDemo
 					sessionManager.SessionStarted += SessionManager_SessionStarted;
 					sessionManager.SessionEnded += SessionManager_SessionEnded;
 
-					while (m_running)
+					using (XnMPointFilter filter = new XnMPointFilter())
+					using (XnMPointDenoiser denoiser = new XnMPointDenoiser())
 					{
-						uint status = context.Update();
-						if (status == 0)
-							sessionManager.Update(context);
+						filter.PrimaryPointCreate += Filter_PrimaryPointCreate;
+						filter.PrimaryPointDestroy += Filter_PrimaryPointDestroy;
+						filter.PrimaryPointUpdate += Filter_PrimaryPointUpdate;
+
+						denoiser.AddListener(filter);
+						sessionManager.AddListener(denoiser);
+
+						while (m_running)
+						{
+							uint status = context.Update();
+							if (status == 0)
+								sessionManager.Update(context);
+						}
 					}
 				}
 			}
+		}
+
+		private void Filter_PrimaryPointUpdate(object sender, HandPointContextEventArgs e)
+		{
+			BeginInvoke(() => { Status.Text = string.Format("Point updated\nX: {0:#.##}\nY: {1:#.##}\nZ: {2:#.##}.", e.HPC.Position.X, e.HPC.Position.Y, e.HPC.Position.Z); });
+		}
+
+		private void Filter_PrimaryPointDestroy(object sender, PointDestroyEventArgs e)
+		{
+			BeginInvoke(() => { Status.Text = "Point destroyed."; });
+		}
+
+		private void Filter_PrimaryPointCreate(object sender, PrimaryPointCreateEventArgs e)
+		{
+			BeginInvoke(() => { Status.Text = "Point created."; });
 		}
 
 		private void SessionManager_SessionEnded(object sender, EventArgs e)
