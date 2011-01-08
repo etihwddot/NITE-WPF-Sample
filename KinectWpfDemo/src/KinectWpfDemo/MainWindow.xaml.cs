@@ -4,7 +4,8 @@ using System.ComponentModel;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
-using ManagedNite;
+using xn;
+using xnv;
 
 namespace KinectWpfDemo
 {
@@ -36,62 +37,55 @@ namespace KinectWpfDemo
 
 		private void CreateAndRunKinect()
 		{
-			using (XnMOpenNIContext context = new XnMOpenNIContext())
+			using (Context context = new Context(@"data\openNI.xml"))
 			{
-				context.Init();
+				SessionManager sessionManager = new SessionManager(context, "Wave", "RaiseHand");
+				BeginInvoke(() => { Status.Text = "Session created, wave to start session."; });
 
-				// TODO: why does it crash when we dispose session manager?
-				XnMSessionManager sessionManager = new XnMSessionManager(context, "Wave", "RaiseHand");
+				sessionManager.SessionStart += SessionManager_SessionStart;
+				sessionManager.SessionEnd += SessionManager_SessionEnd;
+
+				PointControl pointControl = new PointControl();
+				pointControl.PrimaryPointCreate += PointControl_PrimaryPointCreate;
+				pointControl.PrimaryPointDestroy += PointControl_PrimaryPointDestroy;
+				pointControl.PrimaryPointUpdate += PointControl_PrimaryPointUpdate;
+
+				PointDenoiser denoiser = new PointDenoiser();
+				denoiser.AddListener(pointControl);
+				sessionManager.AddListener(denoiser);
+
+				while (m_running)
 				{
-					BeginInvoke(() => { Status.Text = "Session created, wave to start session."; });
-
-					sessionManager.SessionStarted += SessionManager_SessionStarted;
-					sessionManager.SessionEnded += SessionManager_SessionEnded;
-
-					using (XnMPointFilter filter = new XnMPointFilter())
-					using (XnMPointDenoiser denoiser = new XnMPointDenoiser())
-					{
-						filter.PrimaryPointCreate += Filter_PrimaryPointCreate;
-						filter.PrimaryPointDestroy += Filter_PrimaryPointDestroy;
-						filter.PrimaryPointUpdate += Filter_PrimaryPointUpdate;
-
-						denoiser.AddListener(filter);
-						sessionManager.AddListener(denoiser);
-
-						while (m_running)
-						{
-							uint status = context.Update();
-							if (status == 0)
-								sessionManager.Update(context);
-						}
-					}
+					context.WaitAndUpdateAll();
+					sessionManager.Update(context);
 				}
 			}
 		}
 
-		private void Filter_PrimaryPointUpdate(object sender, HandPointContextEventArgs e)
+		private void PointControl_PrimaryPointUpdate(ref HandPointContext context)
 		{
-			BeginInvoke(() => { Status.Text = string.Format("Point updated\nX: {0:#.##}\nY: {1:#.##}\nZ: {2:#.##}.", e.HPC.Position.X, e.HPC.Position.Y, e.HPC.Position.Z); });
+			HandPointContext contextCopy = context;
+			BeginInvoke(() => { Status.Text = string.Format("Point updated\nX: {0:#.##}\nY: {1:#.##}\nZ: {2:#.##}.", contextCopy.ptPosition.X, contextCopy.ptPosition.Y, contextCopy.ptPosition.Z); });
 		}
 
-		private void Filter_PrimaryPointDestroy(object sender, PointDestroyEventArgs e)
+		private void PointControl_PrimaryPointDestroy(uint id)
 		{
 			BeginInvoke(() => { Status.Text = "Point destroyed."; });
 		}
 
-		private void Filter_PrimaryPointCreate(object sender, PrimaryPointCreateEventArgs e)
+		private void  PointControl_PrimaryPointCreate(ref HandPointContext context, ref Point3D ptFocus)
 		{
 			BeginInvoke(() => { Status.Text = "Point created."; });
 		}
 
-		private void SessionManager_SessionEnded(object sender, EventArgs e)
-		{
-			BeginInvoke(() => { Status.Text = "Session Ended, wave to start it again."; });
-		}
-
-		private void SessionManager_SessionStarted(object sender, PointEventArgs e)
+		private void SessionManager_SessionStart(ref Point3D position)
 		{
 			BeginInvoke(() => { Status.Text = "Session Started"; });
+		}
+
+		private void SessionManager_SessionEnd()
+		{
+			BeginInvoke(() => { Status.Text = "Session Ended, wave to start it again."; });
 		}
 
 		private void BeginInvoke(Action action)
@@ -99,7 +93,7 @@ namespace KinectWpfDemo
 			Dispatcher.BeginInvoke(DispatcherPriority.Background, action);			
 		}
 
-		bool m_running;
+		volatile bool m_running;
 		Thread m_thread;
 	}
 }
