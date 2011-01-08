@@ -7,7 +7,7 @@ using System.Windows.Threading;
 using xn;
 using xnv;
 
-namespace KinectWpfDemo
+namespace NiteWpfDemo
 {
 	public partial class MainWindow : Window
 	{
@@ -30,12 +30,12 @@ namespace KinectWpfDemo
 
 		private void MainWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			m_thread = new Thread(CreateAndRunKinect);
+			m_thread = new Thread(CreateAndRun);
 			m_running = true;
 			m_thread.Start();
 		}
 
-		private void CreateAndRunKinect()
+		private void CreateAndRun()
 		{
 			using (Context context = new Context(@"data\openNI.xml"))
 			{

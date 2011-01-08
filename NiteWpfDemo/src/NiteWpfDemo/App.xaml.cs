@@ -1,7 +1,7 @@
 ﻿
 using System.Windows;
 
-namespace KinectWpfDemo
+namespace NiteWpfDemo
 {
 	public partial class App : Application
 	{
