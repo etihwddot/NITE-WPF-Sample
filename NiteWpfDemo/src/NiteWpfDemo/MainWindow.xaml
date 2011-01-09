@@ -41,5 +41,7 @@
 
 		<!-- Point Data -->
 		<TextBlock Style="{StaticResource PointOutputStyle}" Grid.Row="1"></TextBlock>
+
+		<Image x:Name="ImageOutput" Grid.Row="2" />
     </Grid>
 </Window>
