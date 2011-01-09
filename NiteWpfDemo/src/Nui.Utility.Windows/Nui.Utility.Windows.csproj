@@ -83,7 +83,7 @@
     <Compile Include="NotifyPropertyChangedBase.cs" />
     <Compile Include="NotifyPropertyChangedDispatcherBase.cs" />
     <Compile Include="SessionState.cs" />
-    <Compile Include="OpenNISession.cs" />
+    <Compile Include="NuiSession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
