@@ -2,10 +2,44 @@
 	x:Class="NiteWpfDemo.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="WPF Demo"
+	xmlns:nui="clr-namespace:Nui.Utility.Windows;assembly=Nui.Utility.Windows"
+	Title="WPF Demo"
 	Height="480"
 	Width="640">
-    <Grid>
-		<TextBlock x:Name="Status" VerticalAlignment="Center" HorizontalAlignment="Center">Loading...</TextBlock>
+
+	<Window.Resources>
+		<Style x:Key="SessionStateStyle" TargetType="{x:Type TextBlock}">
+			<Setter Property="Margin" Value="16" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="Text" Value="Loading..." />
+			<Style.Triggers>
+				<DataTrigger Binding="{Binding State}" Value="{x:Static nui:SessionState.Idle}">
+					<Setter Property="Text" Value="Wave to start." />
+				</DataTrigger>
+				<DataTrigger Binding="{Binding State}" Value="{x:Static nui:SessionState.Running}">
+					<Setter Property="Text" Value="Session running." />
+				</DataTrigger>
+			</Style.Triggers>
+		</Style>
+
+		<Style x:Key="PointOutputStyle" TargetType="{x:Type TextBlock}">
+			<Setter Property="Margin" Value="16" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="Text" Value="{Binding Point}" />
+		</Style>
+	</Window.Resources>
+	
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+		
+		<!-- Session State -->
+		<TextBlock Style="{StaticResource SessionStateStyle}" />
+
+		<!-- Point Data -->
+		<TextBlock Style="{StaticResource PointOutputStyle}" Grid.Row="1"></TextBlock>
     </Grid>
 </Window>
