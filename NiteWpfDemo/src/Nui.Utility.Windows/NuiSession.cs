@@ -97,7 +97,7 @@ namespace Nui.Utility.Windows
 				int pixelIndex = depthIndex * bytesPerPixel;
 				ushort depth = depths[depthIndex];
 
-				byte gray = depth == 0 ? (byte) 0x00 : (byte) (0xFF - (depth >> 4));
+				byte gray = (byte) (depth == 0 ? 0x00 : (0xFF - (depth >> 4)));
 				bytes[pixelIndex] = gray;
 				bytes[pixelIndex + 1] = gray;
 				bytes[pixelIndex + 2] = gray;
