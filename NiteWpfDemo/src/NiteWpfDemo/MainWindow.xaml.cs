@@ -21,6 +21,7 @@ namespace NiteWpfDemo
 		private void CompositionTarget_Rendering(object sender, EventArgs e)
 		{
 			ImageOutput.Source = m_session.GetColorImage();
+			DepthOutput.Source = m_session.GetDepthImage();
 		}
 
 		readonly NuiSession m_session;

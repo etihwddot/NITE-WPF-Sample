@@ -2,6 +2,8 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
@@ -80,6 +82,57 @@ namespace Nui.Utility.Windows
 			return BitmapSource.Create(metadata.XRes, metadata.YRes, 96, 96, PixelFormats.Rgb24, null, bytes, metadata.XRes * bytesPerPixel);
 		}
 
+		public BitmapSource GetDepthImage()
+		{
+			int xResolution;
+			int yResolution;
+			ushort[] depths = GetDepths(out xResolution, out yResolution);
+			if (depths == null)
+				return null;
+
+			const int bytesPerPixel = 3;
+
+			// convert the depths to a grayscale image
+			byte[] bytes = new byte[depths.Length * bytesPerPixel];
+			for (int depthIndex = 0; depthIndex < depths.Length; depthIndex++)
+			{
+				int pixelIndex = depthIndex * bytesPerPixel;
+				ushort depth = depths[depthIndex];
+
+				byte gray = depth == 0 ? (byte) 0x00 : (byte) (0xFF - (depth >> 4));
+				bytes[pixelIndex] = gray;
+				bytes[pixelIndex + 1] = gray;
+				bytes[pixelIndex + 2] = gray;
+			}
+
+			// create a bitmap
+			return BitmapSource.Create(xResolution, yResolution, 96, 96, PixelFormats.Rgb24, null, bytes, xResolution * bytesPerPixel);
+		}
+
+		public ushort[] GetDepths(out int xResolution, out int yResolution)
+		{
+			xResolution = 0;
+			yResolution = 0;
+
+			if (m_depthGenerator == null)
+				return null;
+
+			// calculate the core metadata
+			DepthMetaData metadata = m_depthGenerator.GetMetaData();
+			xResolution = metadata.XRes;
+			yResolution = metadata.YRes;
+			int totalDepths = metadata.XRes * metadata.YRes;
+
+			// copy the depths
+			// TODO: Is there a better way to marshal ushorts from an IntPtr?
+			IntPtr depthMapPtr = m_depthGenerator.GetDepthMapPtr();
+			short[] depthsTemp = new short[totalDepths];
+			Marshal.Copy(depthMapPtr, depthsTemp, 0, depthsTemp.Length);
+			ushort[] depths = new ushort[totalDepths];
+			Buffer.BlockCopy(depthsTemp, 0, depths, 0, totalDepths * metadata.BytesPerPixel);
+			return depths;
+		}
+
 		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
 			// only listen to the first loaded
@@ -109,6 +162,7 @@ namespace Nui.Utility.Windows
 		{
 			m_context = new Context(@"data\openNI.xml");
 			m_imageGenerator = new ImageGenerator(m_context);
+			m_depthGenerator = new DepthGenerator(m_context);
 
 			SessionManager sessionManager = new SessionManager(m_context, "Wave", "RaiseHand");
 
@@ -172,6 +226,8 @@ namespace Nui.Utility.Windows
 
 		Context m_context;
 		ImageGenerator m_imageGenerator;
+		DepthGenerator m_depthGenerator;
+	
 		volatile bool m_running;
 		Thread m_thread;
 		SessionState m_state;
