@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Media;
 using Nui.Utility.Windows;
@@ -10,12 +11,21 @@ namespace NiteWpfDemo
 	{
 		public MainWindow()
 		{
-			m_session = new NuiSession(this);
+			m_session = new NuiSession();
 			DataContext = m_session;
 
 			InitializeComponent();
 
 			CompositionTarget.Rendering += CompositionTarget_Rendering;
+		}
+
+		protected override void OnClosing(CancelEventArgs e)
+		{
+			if (m_session != null)
+			{
+				m_session.Dispose();
+				m_session = null;
+			}
 		}
 
 		private void CompositionTarget_Rendering(object sender, EventArgs e)
@@ -24,6 +34,6 @@ namespace NiteWpfDemo
 			DepthOutput.Source = m_session.GetDepthImage();
 		}
 
-		readonly NuiSession m_session;
+		NuiSession m_session;
 	}
 }

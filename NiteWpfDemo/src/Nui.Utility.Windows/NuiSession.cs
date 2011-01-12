@@ -1,10 +1,7 @@
 ﻿
 using System;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using xn;
@@ -12,13 +9,14 @@ using xnv;
 
 namespace Nui.Utility.Windows
 {
-	public sealed class NuiSession : NotifyPropertyChangedDispatcherBase
+	public sealed class NuiSession : NotifyPropertyChangedDispatcherBase, IDisposable
 	{
-		public NuiSession(Window window)
+		public NuiSession()
 		{
-			m_window = window;
-			window.Loaded += Window_Loaded;
-			window.Closing += Window_Closing;
+			// create a processing thread
+			m_thread = new Thread(CreateAndRun);
+			m_running = true;
+			m_thread.Start();
 		}
 
 		public static readonly string StateProperty = "State";
@@ -40,6 +38,9 @@ namespace Nui.Utility.Windows
 				}
 			}
 		}
+
+		public event EventHandler SwipeLeft;
+		public event EventHandler SwipeRight;
 
 		public static readonly string PointProperty = "Point";
 		public System.Windows.Media.Media3D.Point3D? Point
@@ -71,13 +72,11 @@ namespace Nui.Utility.Windows
 			const int bytesPerPixel = 3;
 			int totalPixels = metadata.XRes * metadata.YRes;
 
-			// copy the image
+			// get the image
 			IntPtr imageMapPtr = m_imageGenerator.GetImageMapPtr();
-			byte[] bytes = new byte[totalPixels * bytesPerPixel];
-			Marshal.Copy(imageMapPtr, bytes, 0, bytes.Length);
 
 			// create a bitmap
-			return BitmapSource.Create(metadata.XRes, metadata.YRes, 96, 96, PixelFormats.Rgb24, null, bytes, metadata.XRes * bytesPerPixel);
+			return BitmapSource.Create(metadata.XRes, metadata.YRes, 96, 96, PixelFormats.Rgb24, null, imageMapPtr, totalPixels * bytesPerPixel, metadata.XRes * bytesPerPixel);
 		}
 
 		public BitmapSource GetDepthImage()
@@ -131,20 +130,7 @@ namespace Nui.Utility.Windows
 			return depths;
 		}
 
-		private void Window_Loaded(object sender, RoutedEventArgs e)
-		{
-			// only listen to the first loaded
-			m_window.Loaded -= Window_Loaded;
-
-			Debug.Assert(m_thread == null, "Can only run one instance of the processing thread.");
-
-			// create a processing thread
-			m_thread = new Thread(CreateAndRun);
-			m_running = true;
-			m_thread.Start();
-		}
-
-		private void Window_Closing(object sender, CancelEventArgs e)
+		public void Dispose()
 		{
 			if (m_thread != null)
 			{
@@ -175,8 +161,14 @@ namespace Nui.Utility.Windows
 			pointControl.PrimaryPointDestroy += PointControl_PrimaryPointDestroy;
 			pointControl.PrimaryPointUpdate += PointControl_PrimaryPointUpdate;
 
+			SwipeDetector swipeDetector = new SwipeDetector();
+			swipeDetector.UseSteady = true;
+			swipeDetector.SwipeLeft += SwipeDetector_SwipeLeft;
+			swipeDetector.SwipeRight += SwipeDetector_SwipeRight;
+
 			PointDenoiser denoiser = new PointDenoiser();
 			denoiser.AddListener(pointControl);
+			denoiser.AddListener(swipeDetector);
 			sessionManager.AddListener(denoiser);
 
 			while (m_running)
@@ -184,6 +176,16 @@ namespace Nui.Utility.Windows
 				m_context.WaitAndUpdateAll();
 				sessionManager.Update(m_context);
 			}
+		}
+
+		private void SwipeDetector_SwipeLeft(float velocity, float angle)
+		{
+			SwipeLeft.RaiseEvent(this);
+		}
+
+		private void SwipeDetector_SwipeRight(float velocity, float angle)
+		{
+			SwipeRight.RaiseEvent(this);
 		}
 
 		private void PointControl_PrimaryPointUpdate(ref HandPointContext context)
@@ -219,8 +221,6 @@ namespace Nui.Utility.Windows
 			// update the state
 			Dispatcher.BeginInvoke(() => { State = SessionState.Running; });
 		}
-
-		readonly Window m_window;
 
 		Context m_context;
 		ImageGenerator m_imageGenerator;

@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NiteWpfDemo", "src\NiteWpfD
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nui.Utility.Windows", "src\Nui.Utility.Windows\Nui.Utility.Windows.csproj", "{B8D0520B-1712-40FE-95E1-7ABC92801025}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleSlideshow", "src\SimpleSlideshow\SimpleSlideshow.csproj", "{CFA3EC40-E444-4BFA-BE85-DCB164004A34}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -19,6 +21,10 @@ Global
 		{B8D0520B-1712-40FE-95E1-7ABC92801025}.Debug|x86.Build.0 = Debug|x86
 		{B8D0520B-1712-40FE-95E1-7ABC92801025}.Release|x86.ActiveCfg = Release|x86
 		{B8D0520B-1712-40FE-95E1-7ABC92801025}.Release|x86.Build.0 = Release|x86
+		{CFA3EC40-E444-4BFA-BE85-DCB164004A34}.Debug|x86.ActiveCfg = Debug|x86
+		{CFA3EC40-E444-4BFA-BE85-DCB164004A34}.Debug|x86.Build.0 = Debug|x86
+		{CFA3EC40-E444-4BFA-BE85-DCB164004A34}.Release|x86.ActiveCfg = Release|x86
+		{CFA3EC40-E444-4BFA-BE85-DCB164004A34}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,32 @@
+﻿<Window
+	x:Class="SimpleSlideshow.MainWindow"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	Title="Slideshow"
+	WindowStyle="None"
+	WindowState="Maximized"
+	Background="Black">
+
+	<Grid>
+		<Image Source="{Binding CurrentImage}" />
+
+		<Border Background="Black" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="8" CornerRadius="12">
+			<StackPanel Margin="8,4">
+				<TextBlock Text="Press Esc to exit." HorizontalAlignment="Center" Foreground="White" FontWeight="Bold" />
+				<TextBlock Text="{Binding CurrentImageName}" Foreground="White" HorizontalAlignment="Center" />
+			</StackPanel>
+		</Border>
+
+		<Image
+			x:Name="DepthOutput"
+			Margin="8"
+			Height="200"
+			Width="200"
+			HorizontalAlignment="Right"
+			VerticalAlignment="Bottom" />
+
+		<Border CornerRadius="12" Background="White" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8">
+			<TextBlock Text="{Binding Session.State}" Margin="8,4" FontSize="14" />
+		</Border>
+	</Grid>
+</Window>

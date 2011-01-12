@@ -80,6 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DispatcherUtility.cs" />
+    <Compile Include="EventHandlerUtility.cs" />
     <Compile Include="NotifyPropertyChangedBase.cs" />
     <Compile Include="NotifyPropertyChangedDispatcherBase.cs" />
     <Compile Include="SessionState.cs" />
